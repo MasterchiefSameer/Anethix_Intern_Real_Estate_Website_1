@@ -20,7 +20,10 @@
   },
   "homepage": "https://github.com/MasterchiefSameer/Anethix_Intern_Real_Estate_Website_1#readme",
   "dependencies": {
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "mongodb": "^7.5.0",
+    "mongoose": "^9.7.4",
     "nodemon": "^3.1.14"
   }
 }
