@@ -14,8 +14,9 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-    }
-}, { timestamp: true});
+    },
+}, { timestamps: true}
+);
 
 //model creation
 const User = mongoose.model('User', userSchema);

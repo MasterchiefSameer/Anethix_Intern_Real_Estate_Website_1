@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
 import userRouter from './routes/user.route.js' 
+import authRouter from './routes/auth.route.js'
 import dns from 'node:dns';
 
 // Fix DNS resolution issues by routing queries through public DNS servers
@@ -24,8 +25,12 @@ mongoose
 const app = express();
 const PORT = 3000;
 
+//This will allow the server to use json data 
+app.use(express.json());
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 })
 
 app.use("/api/user", userRouter)
+app.use("/api/auth", authRouter)
