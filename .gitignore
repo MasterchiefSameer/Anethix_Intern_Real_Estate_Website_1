@@ -26,3 +26,9 @@ dist-ssr
 PRD.md
 SignUp.md
 SignIn.md
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+backend/.env
