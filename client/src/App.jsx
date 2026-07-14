@@ -9,8 +9,10 @@ import { Toaster } from 'sonner'
 import Home from './pages/Customer/Home'
 import About from './pages/Customer/About'
 import Contact from './pages/Customer/Contact'
-import Login from './pages/Customer/Login'
-import Register from './pages/Customer/Register'
+// import Login from './pages/Customer/Login'
+// import SignIn from './pages/Auth/SignIn'
+// import Register from './pages/Customer/Register'
+import SignUp from './pages/Auth/SignUp'
 import Header from './components/Header'
 
 /**
@@ -26,8 +28,9 @@ const App = () => {
         <Route path='/' element={<Home />} />
         <Route path='/about' element={<About />} />
         <Route path='/contact' element={<Contact />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/register' element={<Register />} />
+        {/* <Route path='/login' element={<Login />} /> */}
+        {/* <Route path='/sign-in' element={<SignIn />} /> */}
+        <Route path='/sign-up' element={<SignUp />} />
       </Routes>
     </BrowserRouter>
   )

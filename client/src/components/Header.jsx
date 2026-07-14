@@ -29,7 +29,7 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem("currentUser")
     setUser(null)
-    navigate("/login")
+    navigate("/sign-in")
   }
 
   return (
@@ -54,7 +54,7 @@ const Header = () => {
                 Log out
               </button>
             ) : (
-              <Link to="/login" className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium transition-colors">Sign In</Link>
+              <Link to="/sign-in" className="bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-md text-sm font-medium transition-colors">Sign In</Link>
             )}
           </nav>
         </div>
@@ -63,4 +63,4 @@ const Header = () => {
   )
 }
 
-export default Header
+export default Header
