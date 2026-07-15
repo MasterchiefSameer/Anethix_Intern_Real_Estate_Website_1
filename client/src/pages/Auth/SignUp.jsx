@@ -10,24 +10,24 @@ export default function SignUp() {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.id] : e.target.value,
+      [e.target.id]: e.target.value,
     });
   };
   // console.log(formData); //show all data in console
   const handleSubmit = async (e) => {
     e.preventDefault();
-   try{
-    setLoading(true);
-    const res = await fetch('/api/auth/signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    });
-    const data = await res.json();
-    // console.log(data); // show the database response in console of browser
-     if (data.success === false) {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      // console.log(data); // show the database response in console of browser
+      if (data.success === false) {
         setLoading(false);
         setError(data.message);
         return;
@@ -47,15 +47,34 @@ export default function SignUp() {
         Sign Up
       </h1>
       <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
-        <input type="text" placeholder="username"
-          className='border p-3 rounded-lg bg-white' id='username' onChange={handleChange}  />
-        <input type="email" placeholder="email"
-          className='border p-3 rounded-lg bg-white' id='email' onChange={handleChange} />
-        <input type="password" placeholder="password"
-          className='border p-3 rounded-lg bg-white' id='password'onChange={handleChange}  />
-        <button disabled = {loading} className='bg-slate-700 text-white p-3 rounded-lg
-        uppercase hover:opacity-95 disabled:opacity-80 transition
-         duration-300'>{loading ? 'Creating....' : 'Sign up'}</button>
+        <input
+          type="text"
+          placeholder="Username"
+          className='border p-3 rounded-lg bg-white'
+          id='username'
+          onChange={handleChange} 
+          />
+        <input
+          type="email"
+          placeholder="Email"
+          className='border p-3 rounded-lg bg-white'
+          id='email'
+          onChange={handleChange} 
+          />
+
+        <input
+          type="password"
+          placeholder="Password"
+          className='border p-3 rounded-lg bg-white'
+          id='password'
+          onChange={handleChange} 
+          />
+          
+        <button disabled={loading}
+          className='bg-slate-700 text-white p-3 rounded-lg
+        uppercase hover:opacity-95 disabled:opacity-80
+        transition duration-300'>{loading ? 'Creating....' : 'Sign up'}
+        </button>
       </form>
       <div className='flex gap-2 mt-5'>
         <p>Have an account?</p>
