@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  currentUser: null,
-  error: null,
-  loading: false,
+  currentUser: null, // Becomes an object containing user details (username, email, avatar, etc.) when logged in
+  error: null, // Stores any sign-in error messages if authentication fails
+  loading: false, // A boolean tracking if a login request is currently pending
 };
 
 const userSlice = createSlice({
