@@ -6,6 +6,7 @@ import path from 'path';
 import userRouter from './routes/user.route.js' 
 import authRouter from './routes/auth.route.js'
 import dns from 'node:dns';
+import cookieParser from 'cookie-parser';
 
 // Fix DNS resolution issues by routing queries through public DNS servers
 // dns.setDefaultResultOrder('ipv4first');
@@ -27,6 +28,9 @@ const PORT = 3000;
 
 //This will allow the server to use json data 
 app.use(express.json());
+
+// This will allow the server to use cookie data
+app.use(cookieParser());
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
