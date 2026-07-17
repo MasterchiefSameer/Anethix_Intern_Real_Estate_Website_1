@@ -1,0 +1,76 @@
+# Implementation Plan - Cloud Storage Alternatives to Firebase
+
+This plan outlines the replacement of Firebase Storage with a free cloud-based alternative. We propose two primary platforms: **Supabase Storage** and **Cloudinary**. Both offer generous free tiers and do not require a credit card to set up.
+
+---
+
+## Open Questions: Choose Your Storage Provider
+
+Please choose which platform you would like to proceed with:
+
+### Option A: Cloudinary (Recommended)
+* **How it works**: Direct image uploads from the frontend to Cloudinary using a standard `fetch` call.
+* **Why it's great**: 
+  * Requires **no external libraries** (no SDK installs) - keep your bundle small.
+  * Upload is extremely fast and returns optimized image URLs.
+  * Very generous free tier (25 GB storage/bandwidth per month).
+* **Setup Required**:
+  1. Create a free account at [Cloudinary](https://cloudinary.com).
+  2. Create an **Unsigned Upload Preset** in your Cloudinary settings (enables uploading directly from frontend).
+  3. Define your Cloud name and upload preset in your client's `.env`.
+
+### Option B: Supabase Storage
+* **How it works**: Uses the Supabase JavaScript library to upload files directly to a Supabase bucket.
+* **Why it's great**:
+  * Very similar to Firebase Storage syntax.
+  * Generous free tier (1 GB storage, 50 GB bandwidth per month).
+* **Setup Required**:
+  1. Create a free account and project at [Supabase](https://supabase.com).
+  2. Create a public Storage bucket named `avatars` (or similar).
+  3. Add `@supabase/supabase-js` package to frontend dependencies.
+  4. Define your Supabase URL and Anon Key in your client's `.env`.
+
+---
+
+## Proposed Changes (Depending on Choice)
+
+### 1. Frontend Configuration
+
+#### [MODIFY] [client/.env](file:///f:/Web_D/Projects/Real_Estate_Website/client/.env)
+- Add the credentials for the chosen service:
+  - For Cloudinary: `VITE_CLOUDINARY_CLOUD_NAME` and `VITE_CLOUDINARY_UPLOAD_PRESET`.
+  - For Supabase: `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+
+#### [MODIFY] [userSlice.js](file:///f:/Web_D/Projects/Real_Estate_Website/client/src/redux/user/userSlice.js)
+- Expand `userSlice` state reducers to support all profile actions:
+  - Update: `updateUserStart`, `updateUserSuccess`, `updateUserFailure`
+  - Delete: `deleteUserStart`, `deleteUserSuccess`, `deleteUserFailure`
+  - Sign Out: `signOutUserStart`, `signOutUserSuccess`, `signOutUserFailure`
+
+#### [MODIFY] [Profile.jsx](file:///f:/Web_D/Projects/Real_Estate_Website/client/src/pages/Customer/Profile.jsx)
+- Replicate the layout provided, supporting:
+  - Form edits (username, email, password).
+  - File picker trigger by clicking the avatar image.
+  - Asynchronous file upload using the chosen service's SDK or API.
+  - Connecting "Update", "Delete account", "Sign out", and "Show Listings" buttons to the backend endpoints.
+
+---
+
+### 2. Backend Configuration
+
+#### [MODIFY] [user.controller.js](file:///f:/Web_D/Projects/Real_Estate_Website/backend/controllers/user.controller.js)
+- Implement `updateUser`, `deleteUser`, and `getUserListings` controllers.
+
+#### [MODIFY] [user.route.js](file:///f:/Web_D/Projects/Real_Estate_Website/backend/routes/user.route.js)
+- Define `POST /update/:id`, `DELETE /delete/:id`, and `GET /listings/:id` routes.
+
+#### [MODIFY] [auth.controller.js](file:///f:/Web_D/Projects/Real_Estate_Website/backend/controllers/auth.controller.js)
+- Implement `signout` controller to clear the `access_token` cookie.
+
+---
+
+## Verification Plan
+
+### Manual Verification
+- Deploy and verify upload function in browser.
+- Verify image is successfully hosted on the cloud service and updates in database.

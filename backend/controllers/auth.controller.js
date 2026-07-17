@@ -58,7 +58,7 @@ export const google = async (req, res, next) => {
             // Generate a random password since they logged in via Google
             const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
             const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
-            
+
             // Generate a unique username by removing spaces, converting to lowercase and appending random chars
             const baseUsername = name.split(" ").join("").toLowerCase();
             const randomSuffix = Math.random().toString(36).slice(-4);

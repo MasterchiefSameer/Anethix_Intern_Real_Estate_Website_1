@@ -22,7 +22,6 @@ const userSlice = createSlice({
       state.error = action.payload; // the error we get
       state.loading = false; // make loading false
     },
-    
   },
 });
 
