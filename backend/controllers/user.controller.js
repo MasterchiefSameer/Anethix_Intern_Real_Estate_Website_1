@@ -4,3 +4,10 @@ export const test = (req,res) => {
     message: "Api route is working!",
   });
 };
+
+
+export const updateUser = (req, res, next) => {
+
+  
+  
+};
