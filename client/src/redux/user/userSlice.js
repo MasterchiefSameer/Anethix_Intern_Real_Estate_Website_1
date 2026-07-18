@@ -22,9 +22,28 @@ const userSlice = createSlice({
       state.error = action.payload; // the error we get
       state.loading = false; // make loading false
     },
+    updateUserStart: (state) => {
+      state.loading = true; // make loading true
+    },
+    updateUserSuccess: (state, action) => { // action is the data we get it
+      state.currentUser = action.payload; // the data we get
+      state.loading = false; // make loading false
+      state.error = null; // make error null
+    },
+    updateUserFailure: (state, action) => { // action is the data we get it
+      state.error = action.payload; // the error we get
+      state.loading = false; // make loading false
+    },
   },
 });
 
-export const { signInStart, signInSuccess, signInFailure } = userSlice.actions; // use this function in other places
+export const {
+  signInStart,
+  signInSuccess,
+  signInFailure,
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure
+} = userSlice.actions; // use this function in other places
 
 export default userSlice.reducer; //use this reducer in store.js

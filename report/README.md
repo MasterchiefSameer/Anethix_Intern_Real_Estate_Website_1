@@ -1,6 +1,6 @@
 # Real Estate Website - Daily Work Reports
 
-This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **July 17, 2026**.
+This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **July 18, 2026**.
 
 ## 📅 Daily Progress Logs
 
@@ -12,6 +12,7 @@ This directory contains the daily work logs and progress reports for the Real Es
 | **July 15, 2026** | **Sign-In API & Error Handling** | Developed Sign-In API with JWT authentication, custom global error handling, and structured Auth directories. | [View Report](./2026-07-15.md) |
 | **July 16, 2026** | **State Management & OAuth** | Integrated Redux Toolkit & Redux Persist for global state management and completed Google OAuth authentication flow. | [View Report](./2026-07-16.md) |
 | **July 17, 2026** | **Routing & Supabase Storage** | Configured private route guards, structured components, and integrated Supabase image uploads for the user profile. | [View Report](./2026-07-17.md) |
+| **July 18, 2026** | **User Update API & Auth** | Implemented JWT token verification middleware, cookie parsing, and secure user profile update endpoints. | [View Report](./2026-07-18.md) |
 
 ---
 
