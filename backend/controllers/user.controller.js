@@ -11,6 +11,8 @@ export const test = (req,res) => {
 
 
 export const updateUser = async (req, res, next) => {
+ //req.user.id is from the middleware verifyToken.js
+ //req.params.id is from the router.post('/update/:id', ...)
  if(req.user.id !== req.params.id) return next(errorHandler(401, 'You can only update your own profile'));
   
  try{
@@ -33,5 +35,19 @@ export const updateUser = async (req, res, next) => {
  } catch(error){
   next(error);
  }
-  
 };
+
+export const deleteUser = async (req, res, next) => {
+  //req.user.id is from the middleware verifyToken.js
+  //req.params.id is from the router.post('/delete/:id', ...)
+  if(req.user.id !== req.params.id) return next(errorHandler(401, 'You can only delete your own profile'));
+  
+  try {
+    //deleteUser then delete their cookie also
+    await User.findByIdAndDelete(req.params.id);
+    res.clearCookie('access_token');
+    res.status(200).json('User deleted successfully');
+  } catch (error) {
+    next(error);
+  }
+}

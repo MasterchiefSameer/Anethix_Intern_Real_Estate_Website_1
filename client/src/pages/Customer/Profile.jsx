@@ -7,9 +7,9 @@ import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
-  // deleteUserFailure,
-  // deleteUserStart,
-  // deleteUserSuccess,
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
   // signOutUserStart,
 } from '../../redux/user/userSlice';
 import { useDispatch } from 'react-redux';
@@ -37,96 +37,112 @@ const Profile = () => {
     }
   }, [file]);
   // UPDATED: Supabase File Upload
-const handleFileUpload = async (file) => {
-  try {
-    setFileUploadError(false);
-    setFilePerc(10);
+  const handleFileUpload = async (file) => {
+    try {
+      setFileUploadError(false);
+      setFilePerc(10);
 
-    // Check file size (2MB limit)
-    if (file.size > 2 * 1024 * 1024) {
+      // Check file size (2MB limit)
+      if (file.size > 2 * 1024 * 1024) {
+        setFileUploadError(true);
+        setFilePerc(0);
+        toast.error("Image must be less than 2MB");
+        return;
+      }
+
+      // Create unique filename
+      const fileName = `${currentUser._id}-${Date.now()}-${file.name}`;
+      // const fileName = new Date().getTime() + file.name;
+
+      setFilePerc(50);
+
+      // Upload to Supabase Storage Bucket 'avatars' with progress tracking
+      const { data, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type,
+        });
+
+      // if (uploadError) {
+      //   setFileUploadError(true);
+      //   return;
+      // }
+
+      if (uploadError) {
+        console.error("Supabase upload error:", uploadError);
+        setFileUploadError(true);
+        setFilePerc(0);
+        toast.error("Upload failed: " + uploadError.message);
+        return;
+      }
+
+      setFilePerc(75);
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      setFormData({ ...formData, avatar: publicUrlData.publicUrl });
+      setFilePerc(100);
+      toast.success("Image successfully uploaded!");
+      console.log(file.type);
+      console.log(formData.avatar);
+    } catch (err) {
+      console.error("Unexpected upload error:", err);
       setFileUploadError(true);
       setFilePerc(0);
-      toast.error("Image must be less than 2MB");
-      return;
+      toast.error("Unexpected upload error: " + err.message);
     }
+  };
 
-    // Create unique filename
-    const fileName = `${currentUser._id}-${Date.now()}-${file.name}`;
-    // const fileName = new Date().getTime() + file.name;
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  }
 
-    setFilePerc(50);
-
-    // Upload to Supabase Storage Bucket 'avatars' with progress tracking
-    const { data, error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false,
-        contentType: file.type,
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateUserStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       });
 
-    // if (uploadError) {
-    //   setFileUploadError(true);
-    //   return;
-    // }
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
 
-    if (uploadError) {
-      console.error("Supabase upload error:", uploadError);
-      setFileUploadError(true);
-      setFilePerc(0);
-      toast.error("Upload failed: " + uploadError.message);
-      return;
+      dispatch(updateUserSuccess(data));
+      setUpdateSuccess(true);
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
     }
-
-    setFilePerc(75);
-
-    // Get public URL
-    const { data: publicUrlData } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(fileName);
-
-    setFormData({ ...formData, avatar: publicUrlData.publicUrl });
-    setFilePerc(100);
-    toast.success("Image successfully uploaded!");
-    console.log(file.type);
-    console.log(formData.avatar);
-  } catch (err) {
-    console.error("Unexpected upload error:", err);
-    setFileUploadError(true);
-    setFilePerc(0);
-    toast.error("Unexpected upload error: " + err.message);
   }
-};
 
-const handleChange = (e) => {
-   setFormData({...formData, [e.target.id]: e.target.value});
-}
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try{
-   dispatch(updateUserStart());
-   const res = await fetch(`/api/user/update/${currentUser._id}`, {
-    method : 'POST',
-    headers:{
-      'Content-Type':'application/json',
-    },
-    body: JSON.stringify(formData),
-   });
-
-   const data = await res.json();
-   if(data.success === false){
-    dispatch(updateUserFailure(data.message));
-    return;
-   }
-
-    dispatch(updateUserSuccess(data));
-    setUpdateSuccess(true);
-  } catch(error){
-    dispatch(updateUserFailure(error.message));
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
   }
-  
-}
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>
@@ -140,12 +156,12 @@ const handleSubmit = async (e) => {
           accept='image/*' />
 
         <img onClick={() => fileRef.current.click()}
-        src={formData.avatar || currentUser.avatar} // this will show the previous image if the upload fails and chnages when successfully
-        alt="profile"
-        className='rounded-full h-24 w-24 object-cover cursor-pointer
+          src={formData.avatar || currentUser.avatar} // this will show the previous image if the upload fails and chnages when successfully
+          alt="profile"
+          className='rounded-full h-24 w-24 object-cover cursor-pointer
         self-center mt-2'/>
-        
-         <p className='text-sm self-center'>
+
+        <p className='text-sm self-center'>
           {fileUploadError ? (
             <span className='text-red-700'>
               Error Image upload (image must be less than 2MB)
@@ -165,7 +181,7 @@ const handleSubmit = async (e) => {
           id='username'
           onChange={handleChange}
           className='border p-3 rounded-lg bg-white w-full ' />
-        
+
         <input
           type="text"
           placeholder='Email'
@@ -190,16 +206,16 @@ const handleSubmit = async (e) => {
           </button>
         </div>
 
-        <button 
-          disabled = {loading}
+        <button
+          disabled={loading}
           className='bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95
           disabled:opacity-80 transition duration-300'
         >
-          {loading ? 'Loading...' : 'Update'} 
+          {loading ? 'Loading...' : 'Update'}
         </button>
       </form>
       <div className='flex justify-between mt-5'>
-        <span className='text-red-700 cursor-pointer'>Delete account</span>
+        <span onClick={handleDeleteUser} className='text-red-700 cursor-pointer'>Delete account</span>
         <span className='text-red-700 cursor-pointer'>Sign out</span>
         <p className='text-red-700 mt-5'>{error ? error : ''}</p>
         <p className='text-green-700 mt-5'>
