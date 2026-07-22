@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import userRouter from './routes/user.route.js' 
 import authRouter from './routes/auth.route.js'
+import listingRouter from './routes/listing.route.js';
 import dns from 'node:dns';
 import cookieParser from 'cookie-parser';
 
@@ -38,6 +39,7 @@ app.listen(PORT, () => {
 
 app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter)
+app.use("/api/listing", listingRouter)
 
 // middleware for error handling, this will take the custom error or error i made here.
 app.use((err, req, res, next) => {
