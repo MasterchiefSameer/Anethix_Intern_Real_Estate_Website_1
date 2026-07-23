@@ -1,6 +1,6 @@
 # Real Estate Website - Daily Work Reports
 
-This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **July 20, 2026**.
+This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **July 23, 2026**.
 
 ## 📅 Daily Progress Logs
 
@@ -12,7 +12,10 @@ This directory contains the daily work logs and progress reports for the Real Es
 | **July 15, 2026** | **Sign-In API & Error Handling** | Developed Sign-In API with JWT authentication, custom global error handling, and structured Auth directories. | [View Report](./2026-07-15.md) |
 | **July 16, 2026** | **State Management & OAuth** | Integrated Redux Toolkit & Redux Persist for global state management and completed Google OAuth authentication flow. | [View Report](./2026-07-16.md) |
 | **July 17, 2026** | **Routing & Supabase Storage** | Configured private route guards, structured components, and integrated Supabase image uploads for the user profile. | [View Report](./2026-07-17.md) |
-| **July 18, 2026** | **User Update & Delete Account APIs** | Implemented JWT token verification, user profile updates, Redux state handlers, and account deletion endpoints. | [View Report](./2026-07-18.md) |
+| **July 18, 2026** | **User Management APIs & Auth** | Implemented JWT token verification, user profile updates, Redux state handlers, and account deletion endpoints. | [View Report](./2026-07-18.md) |
+| **July 21, 2026** | **Delete User Frontend** | Integrated Redux action dispatchers and backend triggers for user profile account deletion. | [View Report](./2026-07-21.md) |
+| **July 22, 2026** | **Sign-Out & Listing API** | Created backend signout cookie clearance routes, designed the Listing Mongoose model, and set up listing create APIs. | [View Report](./2026-07-22.md) |
+| **July 23, 2026** | **Create Listing UI** | Designed the React form for new listings, integrated secure routes, and added profile navigations. | [View Report](./2026-07-23.md) |
 
 ---
 
@@ -21,4 +24,4 @@ This directory contains the daily work logs and progress reports for the Real Es
 - **Frontend:** React.js (Vite), Redux Toolkit, Redux Persist, Tailwind CSS
 - **Backend:** Node.js, Express.js, JWT (JSON Web Tokens), Bcryptjs
 - **Database:** MongoDB (Mongoose ODM)
-- **Third-Party Integrations:** Firebase (Google Authentication)
+- **Third-Party Integrations:** Firebase (Google Authentication), Supabase Storage
