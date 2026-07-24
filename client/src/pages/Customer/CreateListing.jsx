@@ -1,7 +1,11 @@
 import React, { useState, useRef } from 'react'
 import { supabase } from '../Auth/supabase'
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const CreateListing = () => {
+  const { currentUser } = useSelector((state) => state.user);
+  const navigate = useNavigate();
   const [files, setFiles] = useState([]);
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
@@ -112,11 +116,12 @@ const CreateListing = () => {
     });
   };
 
+  //
   const handleChange = (e) => {
     if (e.target.id === 'sale' || e.target.id === 'rent') {
       setFormData({
         ...formData,
-        type: e.target.id,
+        type: e.target.id, // sale or rent
       });
     }
 
@@ -146,7 +151,9 @@ const CreateListing = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // must upload at least one image
       if (formData.imageUrls.length < 1) return setError('You must upload at least one image');
+      // discounted price will be less than regular price
       if (+formData.regularPrice < +formData.discountPrice)
         return setError('Discount price must be lower than regular price');
       setLoading(true);
@@ -177,7 +184,7 @@ const CreateListing = () => {
   return (
     <main className='p-3 max-w-4xl mx-auto'>
       <h1 className='text-3xl font-semibold text-center my-7'>Create Listing</h1>
-      <form className='flex flex-col sm:flex-row gap-4 '>
+      <form onSubmit={handleSubmit} className='flex flex-col sm:flex-row gap-4 '>
         <div className='flex flex-col gap-4 flex-1'>
           <input
             type="text"
@@ -214,7 +221,7 @@ const CreateListing = () => {
                 id='sale'
                 className='w-6'
                 onChange={handleChange}
-                checked={formData.type === 'sale'} />
+                checked={formData.type === 'sale'} /> {/* checked means it will be checked by default */}
               <span>Sell</span>
             </div>
             <div className="flex gap-2">
@@ -223,7 +230,7 @@ const CreateListing = () => {
                 id='rent'
                 className='w-6'
                 onChange={handleChange}
-                checked={formData.type === 'rent'} />
+                checked={formData.type === 'rent'} /> {/* checked means it will be checked by default */}
               <span>Rent</span>
             </div>
             <div className="flex gap-2">
