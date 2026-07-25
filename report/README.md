@@ -1,6 +1,6 @@
 # Real Estate Website - Daily Work Reports
 
-This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **July 24, 2026**.
+This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **July 25, 2026**.
 
 ## 📅 Daily Progress Logs
 
@@ -16,13 +16,14 @@ This directory contains the daily work logs and progress reports for the Real Es
 | **July 21, 2026** | **Delete User Frontend** | Integrated Redux action dispatchers and backend triggers for user profile account deletion. | [View Report](./2026-07-21.md) |
 | **July 22, 2026** | **Sign-Out & Listing API** | Created backend signout cookie clearance routes, designed the Listing Mongoose model, and set up listing create APIs. | [View Report](./2026-07-22.md) |
 | **July 23, 2026** | **Create Listing UI** | Designed the React form for new listings, integrated secure routes, and added profile navigations. | [View Report](./2026-07-23.md) |
-| **July 24, 2026** | **Listing Image Uploads** | Configured multiple image upload flows, size validation limits, and public URL storage for listings using Supabase. | [View Report](./2026-07-24.md) |
+| **July 24, 2026** | **Image Uploads & Listings API** | Configured listing image upload flows to Supabase and set up the backend get user listings API route. | [View Report](./2026-07-24.md) |
+| **July 25, 2026** | **Manage User Listings UI** | Integrated frontend show user listings UI, delete property entries, and configured backend update listing pipelines. | [View Report](./2026-07-25.md) |
 
 ---
 
 ## 🛠️ Technology Stack Overview
 
 - **Frontend:** React.js (Vite), Redux Toolkit, Redux Persist, Tailwind CSS
-- **Backend:** Node.js, Express.js, JWT (JSON Web Tokens), Bcryptjs
+- **Backend:** Node.js, Express.js, JWT (JSON Web Tokens), Bcryptjs, Cookie-Parser
 - **Database:** MongoDB (Mongoose ODM)
-- **Third-Party Integrations:** Firebase (Google Authentication), Supabase Storage
+- **Third-Party Integrations:** Firebase (Google Authentication), Supabase Storage (for avatar and property images storage).
