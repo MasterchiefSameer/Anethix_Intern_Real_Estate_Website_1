@@ -272,8 +272,8 @@ const CreateListing = () => {
                 required
                 onChange={handleChange}
                 value={formData.bedrooms}
-                className='p-3 border border-gray-300 rounded-lg bg-white w-full' 
-                />
+                className='p-3 border border-gray-300 rounded-lg bg-white w-full'
+              />
               <p>Beds</p>
             </div>
 
@@ -286,8 +286,8 @@ const CreateListing = () => {
                 onChange={handleChange}
                 value={formData.bathrooms}
                 className='p-3 border border-gray-300 rounded-lg focus:outline-none bg-white w-full focus:ring-2 focus:ring-blue-500'
-                required 
-                />
+                required
+              />
               <p>Baths</p>
             </div>
 
@@ -303,7 +303,7 @@ const CreateListing = () => {
                   value={formData.regularPrice}
                   className='p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-full'
                   required
-                  />
+                />
                 <div className='flex flex-col items-center min-w-[120px]'>
                   <p>Regular Price</p>
                   <span

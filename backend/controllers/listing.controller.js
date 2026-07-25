@@ -48,3 +48,15 @@ export const updateListing = async (req, res, next) => {
     next(error);
   }
 };
+// Here Listing is a model of the listing schema and req.params is used to get the id from the URL.
+export const getListing = async (req, res, next) => {
+  try {
+    const listing = await Listing.findById(req.params.id);
+    if (!listing) {
+      return next(errorHandler(404, 'Listing not found!'));
+    }
+    res.status(200).json(listing);
+  } catch (error) {
+    next(error);
+  }
+};

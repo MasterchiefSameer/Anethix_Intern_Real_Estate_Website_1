@@ -18,6 +18,7 @@ import SignUp from './pages/Auth/SignUp'
 import Header1 from './components/Header1'
 import PrivateRoute from './components/PrivateRoute'
 import CreateListing from './pages/Customer/CreateListing.jsx'
+import UpdateListing from './pages/Customer/UpdateListing.jsx'
 
 /**
  * Component: App
@@ -38,6 +39,7 @@ const App = () => {
         <Route element={<PrivateRoute />}>
           <Route path='/profile' element={<Profile />} />
           <Route path='/create-listing' element={<CreateListing />} />
+          <Route path='/update-listing/:listingId' element={<UpdateListing />} />
         </Route>
       </Routes>
     </BrowserRouter>
