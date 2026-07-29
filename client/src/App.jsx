@@ -10,7 +10,6 @@ import Home from './components/Home'
 import About from './pages/Customer/About'
 import Contact from './components/Contact'
 import Profile from './pages/Customer/Profile.jsx'
-// import Login from './pages/Customer/Login'
 import SignIn from './pages/Auth/SignIn'
 // import Register from './pages/Customer/Register'
 import SignUp from './pages/Auth/SignUp'
@@ -19,6 +18,7 @@ import Header1 from './components/Header1'
 import PrivateRoute from './components/PrivateRoute'
 import CreateListing from './pages/Customer/CreateListing.jsx'
 import UpdateListing from './pages/Customer/UpdateListing.jsx'
+import Listing from './pages/Customer/Listing.jsx'
 
 /**
  * Component: App
@@ -33,9 +33,10 @@ const App = () => {
         <Route path='/' element={<Home />} />
         <Route path='/about' element={<About />} />
         <Route path='/contact' element={<Contact />} />
-        {/* <Route path='/login' element={<Login />} /> */}
         <Route path='/sign-in' element={<SignIn />} />
         <Route path='/sign-up' element={<SignUp />} />
+        <Route path='/listing/:listingId' element={<Listing />} />
+
         <Route element={<PrivateRoute />}>
           <Route path='/profile' element={<Profile />} />
           <Route path='/create-listing' element={<CreateListing />} />
