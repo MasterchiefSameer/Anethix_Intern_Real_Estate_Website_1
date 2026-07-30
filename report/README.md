@@ -1,6 +1,6 @@
 # Real Estate Website - Daily Work Reports
 
-This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **July 29, 2026**.
+This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **July 30, 2026**.
 
 ## 📅 Daily Progress Logs
 
@@ -20,6 +20,7 @@ This directory contains the daily work logs and progress reports for the Real Es
 | **July 25, 2026** | **Manage User Listings UI** | Integrated frontend show user listings UI, delete property entries, and configured backend update listing pipelines. | [View Report](./2026-07-25.md) |
 | **July 26, 2026** | **Listing Update & View Page** | Added listing update form, created individual property views featuring Swiper slider galleries, and mapped route APIs. | [View Report](./2026-07-26.md) |
 | **July 29, 2026** | **Landlord Contact Form** | Configured backend get user profile endpoint, created the PropertyContact mailto component, and integrated it into the listing details page. | [View Report](./2026-07-29.md) |
+| **July 30, 2026** | **Listing Search API** | Built advanced backend search endpoints supporting regex text matching, boolean option grids, custom sorting, and offset pagination. | [View Report](./2026-07-30.md) |
 
 ---
 

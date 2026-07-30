@@ -60,3 +60,62 @@ export const getListing = async (req, res, next) => {
     next(error);
   }
 };
+// show all listings
+export const getListings = async (req,res,next) => {
+  try{
+      const limit = parseInt(req.query.limit) || 9; // limiting the number of listings to 9.If thee is no query it will be 9.
+      const startIndex = parseInt(req.query.startIndex) || 0; // starting index of the listings.
+      let offer = req.query.offer
+
+      // if i search from search bar, then offer is undefined, but if i search from search option then it show false, in both cases it show false.. 
+      //so we write if
+      if(offer === undefined || offer === 'false'){
+        offer = { $in: [false, true] } // search inside the DB for offer true and false
+      }
+
+      let furnished = req.query.furnished
+      if(furnished === undefined || furnished === 'false'){
+        furnished = { $in: [false, true] } // search inside the DB for furnished true and false
+      }
+
+      let parking = req.query.parking;
+      if(parking === undefined || parking === 'false'){
+        parking = { $in: [false, true] }
+      }
+
+      let type = req.query.type;
+      //default behaviour of search
+      if(type === undefined || type === 'all'){
+        type = { $in: ['sale', 'rent']};
+      }
+      // for searching purpose
+      const searchTerm = req.query.searchTerm || '';
+      
+      // for sorting purpose, default behaviour
+      const sort = req.query.sort || 'createdAt';
+       //default behaviour
+      const order = req.query.order || 'desc';
+
+      const listings = await Listing.find({
+        name: { $regex: searchTerm, $options: 'i'},
+        offer,
+        furnished,
+        parking,
+        type,
+      })
+      .sort( { [sort]: order } )
+      .limit(limit)
+      .skip(startIndex);
+
+      return res.status(200).json(listings);
+
+  } catch (error){
+    next(error);
+  }
+}
+
+
+
+
+
+
