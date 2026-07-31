@@ -19,6 +19,7 @@ import PrivateRoute from './components/PrivateRoute'
 import CreateListing from './pages/Customer/CreateListing.jsx'
 import UpdateListing from './pages/Customer/UpdateListing.jsx'
 import Listing from './pages/Customer/Listing.jsx'
+import Search from './pages/Customer/Search.jsx'
 
 /**
  * Component: App
@@ -36,6 +37,7 @@ const App = () => {
         <Route path='/sign-in' element={<SignIn />} />
         <Route path='/sign-up' element={<SignUp />} />
         <Route path='/listing/:listingId' element={<Listing />} />
+        <Route path='/search' element={<Search />} />
 
         <Route element={<PrivateRoute />}>
           <Route path='/profile' element={<Profile />} />
