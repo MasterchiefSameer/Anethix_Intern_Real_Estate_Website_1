@@ -20,7 +20,9 @@ const Search = () => {
   const [loading, setLoading] = useState(false);
   const [listings, setListings] = useState([])
   // show all the listings, from the ListingItems when div is {listing.name}
-  console.log(listings); 
+  console.log(listings);
+  const [showMore, setShowMore] = useState(false);
+
   const handleChange = (e) => {
     if (
       e.target.id === 'all' ||
@@ -50,7 +52,6 @@ const Search = () => {
       const order = e.target.value.split('_')[1] || 'desc';
       setSidebardata({ ...sidebardata, sort, order });
     }
-
   }
 
   const handleSubmit = (e) => {
@@ -67,6 +68,21 @@ const Search = () => {
     const searchQuery = urlParams.toString();
     navigate(`/search?${searchQuery}`);
   }
+  //when click show more load more listings
+  const onShowMoreClick = async () => {
+    //wwe want new listings, after 9 listings it will load another 9 listings 
+    const numberOfListings = listings.length; //number of listings we already have
+    const startIndex = numberOfListings; //start from the end of the listings we already have
+    const urlParams = new URLSearchParams(location.search); //  get the search parameters
+    urlParams.set('startIndex', startIndex); //set the start index
+    const searchQuery = urlParams.toString(); //convert the search parameters to a string
+    const res = await fetch(`/api/listing/get?${searchQuery}`); //fetch the new listings
+    const data = await res.json(); //convert the response to a JSON object
+    if (data.length < 9) {
+      setShowMore(false);
+    }
+    setListings([...listings, ...data]); //add the newlisting with the previous listings
+  };
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -101,9 +117,15 @@ const Search = () => {
 
     const fetchListings = async () => {
       setLoading(true);
+      setShowMore(false);
       const searchQuery = urlParams.toString();
       const res = await fetch(`/api/listing/get?${searchQuery}`);
       const data = await res.json();
+      if (data.length > 8) {
+        setShowMore(true)
+      } else {
+        setShowMore(false)
+      }
       setListings(data);
       setLoading(false);
     }
@@ -231,6 +253,14 @@ const Search = () => {
               <ListingItem key={listing._id} listing={listing} />
             ))
           }
+          {showMore && (
+            <button
+              onClick={onShowMoreClick}
+              className='text-green-700 text-center w-full hover:underline p-7'
+            >
+              Show more
+            </button>
+          )}
         </div>
       </div>
     </div>
