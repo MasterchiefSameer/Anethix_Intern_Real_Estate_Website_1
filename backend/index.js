@@ -8,6 +8,7 @@ import authRouter from './routes/auth.route.js'
 import listingRouter from './routes/listing.route.js';
 import dns from 'node:dns';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 
 // Fix DNS resolution issues by routing queries through public DNS servers
 // dns.setDefaultResultOrder('ipv4first');
@@ -23,6 +24,8 @@ mongoose
     console.log('MongoDB connection failed:', error);
 });
 
+
+const __dirname = path.resolve();
 
 const app = express();
 const PORT = 3000;
@@ -40,6 +43,14 @@ app.listen(PORT, () => {
 app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter)
 app.use("/api/listing", listingRouter)
+
+app.use(express.static(path.join(__dirname, '/client/dist')));
+
+//any address that is not equal to api/user && auth && listing, load index.html from client/dist
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+})
+
 
 // middleware for error handling, this will take the custom error or error i made here.
 app.use((err, req, res, next) => {
