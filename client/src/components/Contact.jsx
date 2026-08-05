@@ -11,8 +11,16 @@ import React from 'react'
  */
 const Contact = () => {
   return (
-    <div className="p-8">
-        <h1 className="text-3xl font-bold">Company Contact Page</h1>
+    <div className="py-20 px-4 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-semibold text-slate-700 mb-4">
+        Company Contact Page
+      </h1>
+      <p className="text-slate-600 mt-4">
+        <span>Email:</span> team@anethixlabs.com
+      </p>
+      <p className="text-slate-600 mt-4">
+        <span> Phone number:  </span>+91-9876543210
+      </p>
     </div>
   )
 }
