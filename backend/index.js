@@ -8,7 +8,6 @@ import authRouter from './routes/auth.route.js'
 import listingRouter from './routes/listing.route.js';
 import dns from 'node:dns';
 import cookieParser from 'cookie-parser';
-import path from 'path';
 
 // Fix DNS resolution issues by routing queries through public DNS servers
 // dns.setDefaultResultOrder('ipv4first');
@@ -47,7 +46,7 @@ app.use("/api/listing", listingRouter)
 app.use(express.static(path.join(__dirname, '/client/dist')));
 
 //any address that is not equal to api/user && auth && listing, load index.html from client/dist
-app.get('*', (req, res) => {
+app.get('*splat', (req, res) => {
     res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
 })
 

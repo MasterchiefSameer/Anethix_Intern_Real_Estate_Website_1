@@ -1,6 +1,6 @@
 # Real Estate Website - Daily Work Reports
 
-This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **August 4, 2026**.
+This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **August 5, 2026**.
 
 ## 📅 Daily Progress Logs
 
@@ -25,6 +25,7 @@ This directory contains the daily work logs and progress reports for the Real Es
 | **August 1, 2026** | **Listing Preview Card** | Created the reusable ListingItem card component, structured the search results grid layout, and added text-clamping dependencies. | [View Report](./2026-08-01.md) |
 | **August 2, 2026** | **Search Pagination** | Configured "Show More" buttons, pagination start offset queries, and client listings collection updates. | [View Report](./2026-08-02.md) |
 | **August 4, 2026** | **Home Page Complete** | Built featured property slide banners, query categories for rent/sale/offers, and linked home filters to the search page. | [View Report](./2026-08-04.md) |
+| **August 5, 2026** | **About/Contact & Deployment** | Completed About/Contact page layouts, renamed site titles, configured static assets serving, and added root build scripts. | [View Report](./2026-08-05.md) |
 
 ---
 
