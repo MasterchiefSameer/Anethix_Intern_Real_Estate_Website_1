@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
         enum: ['Tenant', 'Manager'],
         default: 'Tenant',
     },
+    favorites: {
+        type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Listing' }],
+        default: [],
+    },
 }, { timestamps: true}
 );
 

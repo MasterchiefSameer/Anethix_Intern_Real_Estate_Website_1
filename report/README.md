@@ -1,6 +1,6 @@
 # Real Estate Website - Daily Work Reports
 
-This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **August 5, 2026**.
+This directory contains the daily work logs and progress reports for the Real Estate Website project, starting from its inception on **July 12, 2026** up to today, **August 7, 2026**.
 
 ## 📅 Daily Progress Logs
 
@@ -26,6 +26,8 @@ This directory contains the daily work logs and progress reports for the Real Es
 | **August 2, 2026** | **Search Pagination** | Configured "Show More" buttons, pagination start offset queries, and client listings collection updates. | [View Report](./2026-08-02.md) |
 | **August 4, 2026** | **Home Page Complete** | Built featured property slide banners, query categories for rent/sale/offers, and linked home filters to the search page. | [View Report](./2026-08-04.md) |
 | **August 5, 2026** | **About/Contact & Deployment** | Completed About/Contact page layouts, renamed site titles, configured static assets serving, and added root build scripts. | [View Report](./2026-08-05.md) |
+| **August 6, 2026** | **Toast Framework** | Integrated Custom Sonner Toast alerts inside authentication screens, listing submissions, and user dashboards. | [View Report](./2026-08-06.md) |
+| **August 7, 2026** | **Tabbed User Profile & Favourites** | Refactored Profile views into URL-synchronized dashboards, added favorites storage arrays, role checks, and avatar dropdowns. | [View Report](./2026-08-07.md) |
 
 ---
 

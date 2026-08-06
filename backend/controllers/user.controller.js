@@ -77,6 +77,43 @@ export const getUser = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
+};
+
+export const toggleFavorite = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return next(errorHandler(404, 'User not found!'));
+
+    const listingId = req.params.id;
+    const listing = await Listing.findById(listingId);
+    if (!listing) return next(errorHandler(404, 'Listing not found!'));
+
+    const isFavorited = user.favorites.includes(listingId);
+    if (isFavorited) {
+      user.favorites = user.favorites.filter((id) => id.toString() !== listingId);
+    } else {
+      user.favorites.push(listingId);
+    }
+    await user.save();
+
+    const { password, ...rest } = user._doc;
+    res.status(200).json(rest);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getFavorites = async (req, res, next) => {
+  if (req.user.id !== req.params.id) {
+    return next(errorHandler(401, 'You can only view your own favorites'));
+  }
+  try {
+    const user = await User.findById(req.params.id).populate('favorites');
+    if (!user) return next(errorHandler(404, 'User not found!'));
+    res.status(200).json(user.favorites);
+  } catch (error) {
+    next(error);
+  }
+};
 
 
