@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { toast } from 'sonner';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Eye, EyeOff } from 'lucide-react';
 import {
   signInStart,
   signInSuccess,
   signInFailure
-} from '../../redux/user/userSlice.js'
-import { Link, useNavigate } from 'react-router-dom'
+} from '../../redux/user/userSlice.js';
 import OAuth from './OAuth.jsx';
 
 export default function SignIn() {
-  const [formData, setFormData] = useState({}); // set up usestate to storing the data from the form
-  // const [error, setError] = useState(null); // for error message
-  // const [loading, setLoading] = useState(false); // for loading button 
-  const { loading, error } = useSelector((state) => state.user); // show loading and error message from global state, name called user
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const { loading, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(signInFailure(null));
+    dispatch(signInFailure(null)); // clear any previous login error on mount
   }, [dispatch]);
 
   useEffect(() => {
@@ -26,19 +29,22 @@ export default function SignIn() {
       toast.error(error);
     }
   }, [error]);
-  
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
     });
   };
-  // console.log(formData); //show all data in console
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.email || !formData.password) {
+      dispatch(signInFailure('Please fill in all fields'));
+      return;
+    }
+
     try {
-      //remove this and use signInStart
-      // setLoading(true);
       dispatch(signInStart());
       const res = await fetch('/api/auth/signin', {
         method: 'POST',
@@ -48,63 +54,93 @@ export default function SignIn() {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      // console.log(data); // show the database response in console of browser
       if (data.success === false) {
-        // setLoading(false);
-        // setError(data.message);
-        dispatch(signInFailure(data.message)); //show error message
+        dispatch(signInFailure(data.message));
         return;
       }
-      // setLoading(false);
-      // setError(null);
-      dispatch(signInSuccess(data)); // show data
+      dispatch(signInSuccess(data));
       toast.success("Successfully signed in!");
       navigate('/');
-    } catch (error) {
-      // setLoading(false);
-      // setError(error.message);
-      dispatch(signInFailure(error.message));
+    } catch (err) {
+      dispatch(signInFailure(err.message));
     }
   };
-  console.log(formData); //show all data in console of browser
+
   return (
-    <div className='p-3 max-w-lg mx-auto'>
-      <h1 className='text-3xl text-center font-semibold my-7'>
-        Sign In
-      </h1>
-      <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
-        <input type="email"
-          placeholder="Email"
-          className='border p-3 rounded-lg bg-white'
-          id='email'
-          onChange={handleChange}
-        />
-        <input type="password"
-          placeholder="Password"
-          className='border p-3 rounded-lg bg-white'
-          id='password'
-          onChange={handleChange}
-        />
+    <div className='min-h-[80vh] flex items-center justify-center p-4 bg-gray-50/50'>
+      <div className='bg-white border border-gray-100 shadow-sm rounded-xl p-8 max-w-md w-full'>
+        {/* RENTIFUL Brand Logo & Subtitle */}
+        <div className="text-left mb-6">
+          <h1 className="text-2xl font-extrabold tracking-tight">
+            <span className="text-slate-800">Anethix Real </span>
+            <span className="text-rose-500">Estate</span>
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">Welcome! Please sign in to continue</p>
+        </div>
 
-        <button disabled={loading}
-          className='bg-slate-700 text-white p-3 rounded-lg
-        uppercase hover:opacity-95 disabled:opacity-80
-        transition duration-300'>
-        {loading ? 'Creating....' : 'Sign in'}
-        </button>
-        <OAuth />
-      </form>
-      <div className='flex gap-2 mt-5'>
-        <p>Don't have a account?</p>
-        <Link to="/sign-up">
-          <span className='text-blue-700 hover:underline'>
+        <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
+          {/* Email */}
+          <div>
+            <label className='text-sm font-semibold text-slate-700 block mb-1'>Email</label>
+            <input
+              type="email"
+              placeholder="Enter your email address"
+              className='border border-gray-300 p-3 rounded-lg bg-white w-full text-sm outline-none focus:border-blue-500 transition'
+              id='email'
+              onChange={handleChange}
+              value={formData.email}
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className='text-sm font-semibold text-slate-700 block mb-1'>Password</label>
+            <div className='relative w-full'>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your password"
+                className='border border-gray-300 p-3 rounded-lg bg-white w-full text-sm outline-none focus:border-blue-500 transition pr-12'
+                id='password'
+                onChange={handleChange}
+                value={formData.password}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none'
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Submit Action */}
+          <button
+            disabled={loading}
+            className='bg-blue-600 text-white p-3 rounded-lg uppercase hover:bg-blue-700 disabled:opacity-80 transition duration-300 w-full font-semibold text-sm mt-2'
+          >
+            {loading ? 'Signing in...' : 'Sign In'}
+          </button>
+
+          {/* Google SSO Divider */}
+          <div className="flex items-center my-1">
+            <div className="border-b border-gray-200 flex-grow"></div>
+            <span className="px-3 text-xs text-gray-400 uppercase">or</span>
+            <div className="border-b border-gray-200 flex-grow"></div>
+          </div>
+
+          {/* Google SSO Option */}
+          <OAuth />
+        </form>
+
+        {/* Switch to SignUp Link */}
+        <div className='flex justify-center gap-1 mt-6 text-sm text-slate-600'>
+          <p>Don't have an account?</p>
+          <Link to="/sign-up" className='text-blue-600 hover:underline font-semibold'>
             Sign up
-          </span>
-        </Link>
+          </Link>
+        </div>
       </div>
-      </div>
-
-
-  )
+    </div>
+  );
 }
-
