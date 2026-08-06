@@ -1,5 +1,5 @@
-import React from 'react'
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   signInStart,
@@ -16,6 +16,17 @@ export default function SignIn() {
   const { loading, error } = useSelector((state) => state.user); // show loading and error message from global state, name called user
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(signInFailure(null));
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+  
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -47,6 +58,7 @@ export default function SignIn() {
       // setLoading(false);
       // setError(null);
       dispatch(signInSuccess(data)); // show data
+      toast.success("Successfully signed in!");
       navigate('/');
     } catch (error) {
       // setLoading(false);
@@ -90,8 +102,8 @@ export default function SignIn() {
           </span>
         </Link>
       </div>
-      {error && <p className='text-red-500 mt-5'>{error}</p>}
-    </div>
+      </div>
+
 
   )
 }

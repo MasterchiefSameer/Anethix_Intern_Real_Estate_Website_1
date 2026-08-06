@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { supabase } from '../Auth/supabase'
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const UpdateListing = () => {
     const { currentUser } = useSelector((state) => state.user);
@@ -42,6 +43,18 @@ const UpdateListing = () => {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (error) {
+            toast.error(error);
+        }
+    }, [error]);
+
+    useEffect(() => {
+        if (imageUploadError) {
+            toast.error(imageUploadError);
+        }
+    }, [imageUploadError]);
 
     // Upload helper using Supabase Storage
     const storeImage = async (file) => {
@@ -115,6 +128,7 @@ const UpdateListing = () => {
                 setFiles([]);
                 setImageUploadError(false);
                 setUploading(false);
+                toast.success("Images uploaded successfully!");
             })
             .catch((err) => {
                 console.error('Image upload error:', err);
@@ -189,6 +203,7 @@ const UpdateListing = () => {
                 setError(data.message);
                 return;
             }
+            toast.success("Listing updated successfully!");
             navigate(`/listing/${data._id}`);
         } catch (error) {
             setError(error.message);
@@ -382,9 +397,6 @@ const UpdateListing = () => {
                             {uploading ? 'Uploading...' : 'Upload'}
                         </button>
                     </div>
-                    {imageUploadError && (
-                        <p className='text-red-700 text-sm font-semibold'>{imageUploadError}</p>
-                    )}
                     {formData.imageUrls.length > 0 &&
                         formData.imageUrls.map((url, index) => (
                             <div
@@ -406,11 +418,10 @@ const UpdateListing = () => {
                         ))}
                     <button
                         disabled={loading || uploading}
-                        className='p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80'
+                        className='p-3 bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 disabled:opacity-80 w-full'
                     >
                         {loading ? 'Updating...' : 'Update listing'}
                     </button>
-                    {error && <p className='text-red-700 text-sm'>{error}</p>}
                 </div>
             </form>
         </main>

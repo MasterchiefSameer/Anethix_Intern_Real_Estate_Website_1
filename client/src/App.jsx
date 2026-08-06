@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Toaster } from 'sonner'
+import CustomToaster from './components/CustomToaster'
 import Home from './components/Home'
 import About from './pages/Customer/About'
 import Contact from './components/Contact'
@@ -28,7 +28,7 @@ import Search from './pages/Customer/Search.jsx'
 const App = () => {
   return (
     <BrowserRouter>
-      <Toaster position="top-right" />
+      <CustomToaster />
       <Header1 />
       <Routes>
         <Route path='/' element={<Home />} />

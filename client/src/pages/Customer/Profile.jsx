@@ -38,6 +38,18 @@ const Profile = () => {
       handleFileUpload(file);
     }
   }, [file]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (showListingsError) {
+      toast.error("Error showing listings!");
+    }
+  }, [showListingsError]);
   // UPDATED: Supabase File Upload
   const handleFileUpload = async (file) => {
     try {
@@ -124,6 +136,7 @@ const Profile = () => {
 
       dispatch(updateUserSuccess(data));
       setUpdateSuccess(true);
+      toast.success("Profile updated successfully!");
     } catch (error) {
       dispatch(updateUserFailure(error.message));
     }
@@ -141,6 +154,7 @@ const Profile = () => {
         return;
       }
       dispatch(deleteUserSuccess(data));
+      toast.success("Account deleted successfully!");
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
     }
@@ -155,6 +169,7 @@ const Profile = () => {
         return;
       }
       dispatch(deleteUserSuccess(data));
+      toast.success("Successfully signed out!");
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
     }
@@ -182,12 +197,14 @@ const Profile = () => {
       });
       const data = await res.json();
       if (data.success === false) {
-        console.log(data.message);
+        toast.error(data.message);
         return;
       }
-      setUserListings((prev) => prev.filter((listing) => listing._id !== listingId))
+      setUserListings((prev) => prev.filter((listing) => listing._id !== listingId));
+      toast.success("Listing deleted successfully!");
     } catch (error) {
-      console.log(error.message);
+      // console.log(error.message);
+      toast.error(data.message);
     }
   }
   return (
@@ -274,18 +291,10 @@ const Profile = () => {
           className='text-red-700 cursor-pointer'>
           Sign out
         </span>
-        <p className='text-red-700 mt-5'>
-          {error ? error : ''}
-        </p>
-        <p className='text-green-700 mt-5'>
-          {updateSuccess ? 'User is updated successfully' : ''}
-        </p>
       </div>
       <button onClick={handleShowListings} className='text-green-700 w-full'>
         Show Listings
       </button>
-      <p className='text-red-700 mt-5'>{showListingsError ?
-        'Error showing listing' : ''}</p>
         {userListings && userListings.length > 0 && (
         <div className='flex flex-col gap-4'>
           <h1 className='text-center mt-7 text-2xl font-semibold'>

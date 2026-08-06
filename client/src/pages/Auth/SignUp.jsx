@@ -1,6 +1,6 @@
-import React from 'react'
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner';
 import OAuth from './OAuth';
 
 export default function SignUp() {
@@ -8,6 +8,12 @@ export default function SignUp() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -35,6 +41,7 @@ export default function SignUp() {
       }
       setLoading(false);
       setError(null);
+      toast.success("Registration successful! Please sign in.");
       navigate('/sign-in');
     } catch (error) {
       setLoading(false);
@@ -86,8 +93,8 @@ export default function SignUp() {
           </span>
         </Link>
       </div>
-      {error && <p className='text-red-500 mt-5'>{error}</p>}
-    </div>
+      </div>
+    // </div>
 
   )
 }
