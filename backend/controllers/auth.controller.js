@@ -69,7 +69,7 @@ export const google = async (req, res, next) => {
                 email,
                 password: hashedPassword,
                 avatar: photo,
-                role: 'Tenant', // Default role for Google logins
+                role: req.body.role || 'Tenant',  //
             });
             await newUser.save();
             //creating token for the new user

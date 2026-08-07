@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import SwiperCore from 'swiper';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css/bundle';
 import {
@@ -15,7 +15,11 @@ import {
   FaParking,
   FaShare,
 } from 'react-icons/fa';
+import { Heart } from 'lucide-react';
+import { toast } from 'sonner';
+import { updateUserSuccess } from '../../redux/user/userSlice';
 import PropertyContact from './PropertyContact';
+import EMICalculator from '../../components/EMICalculator';
 
 // https://sabe.io/blog/javascript-format-numbers-commas#:~:text=The%20best%20way%20to%20format,format%20the%20number%20with%20commas.
 
@@ -25,9 +29,11 @@ export default function Listing() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [contact, setContact] = useState(false);
   const params = useParams();
   const { currentUser } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+
+  const isFavorited = currentUser && currentUser.favorites && currentUser.favorites.includes(listing?._id);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -50,13 +56,45 @@ export default function Listing() {
       }
     };
     fetchListing();
-  }, [params.listingId]); //useEffect is called every time the params.listingId changes
+  }, [params.listingId]);
+
+  const handleFavoriteToggle = async () => {
+    if (!currentUser) {
+      toast.error("Please sign in to favorite properties!");
+      return;
+    }
+    if (currentUser.role === 'Manager') {
+      toast.error("Managers cannot favorite listings.");
+      return;
+    }
+    try {
+      const res = await fetch(`/api/user/favorite/${listing._id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        toast.error(data.message || "Failed to update favorites");
+        return;
+      }
+      dispatch(updateUserSuccess(data));
+      if (data.favorites.includes(listing._id)) {
+        toast.success("Listing saved to favorites!");
+      } else {
+        toast.success("Listing removed from favorites.");
+      }
+    } catch (error) {
+      toast.error("Error updating favorites list");
+    }
+  };
 
   return (
-    <main>
+    <main className='bg-slate-50 dark:bg-[#12100e] text-slate-800 dark:text-gray-200 transition-colors duration-250 min-h-screen pb-12'>
       {loading && <p className='text-center my-7 text-2xl'>Loading...</p>}
       {error && (
-        <p className='text-center my-7 text-2xl'>Something went wrong!</p>
+        <p className='text-center my-7 text-2xl text-[#1b4332] font-bold'>Something went wrong!</p>
       )}
       {listing && !loading && !error && (
         <div>
@@ -73,7 +111,7 @@ export default function Listing() {
               </SwiperSlide>
             ))}
           </Swiper>
-          <div className='fixed top-[13%] right-[3%] z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-slate-100 cursor-pointer'>
+          <div className='fixed top-[13%] right-[3%] z-10 border rounded-full w-12 h-12 flex justify-center items-center bg-slate-100 cursor-pointer shadow-md'>
             <FaShare
               className='text-slate-500'
               onClick={() => {
@@ -86,68 +124,116 @@ export default function Listing() {
             />
           </div>
           {copied && (
-            <p className='fixed top-[23%] right-[5%] z-10 rounded-md bg-slate-100 p-2'>
+            <p className='fixed top-[23%] right-[5%] z-10 rounded-md bg-slate-100 p-2 shadow-sm font-semibold text-xs text-slate-700'>
               Link copied!
             </p>
           )}
-          <div className='flex flex-col max-w-4xl mx-auto p-3 my-7 gap-4'>
-            <p className='text-2xl font-semibold'>
-              {listing.name} - ${' '}
-              {listing.offer
-                ? listing.discountPrice.toLocaleString('en-US')
-                : listing.regularPrice.toLocaleString('en-US')}
-              {listing.type === 'rent' && ' / month'}
-            </p>
-            <p className='flex items-center mt-6 gap-2 text-slate-600  text-sm'>
-              <FaMapMarkerAlt className='text-green-700' />
-              {listing.address}
-            </p>
-            <div className='flex gap-4'>
-              <p className='bg-red-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
-                {listing.type === 'rent' ? 'For Rent' : 'For Sale'}
+          
+          {/* Split Content Column Grid */}
+          <div className='flex flex-col md:flex-row max-w-6xl mx-auto p-4 my-7 gap-8 items-start'>
+            {/* Left side: listing details */}
+            <div className='flex-1 flex flex-col gap-5 w-full'>
+              
+              {/* Title & Price & Fav Heart */}
+              <div className='flex justify-between items-start gap-4'>
+                <h2 className='text-3xl font-extrabold text-slate-900 dark:text-white font-serif tracking-tight leading-tight flex-1'>
+                  {listing.name}
+                </h2>
+                
+                {/* Heart Favorite Trigger */}
+                {currentUser && currentUser.role === 'Tenant' && listing.userRef !== currentUser._id && (
+                  <button
+                    type="button"
+                    onClick={handleFavoriteToggle}
+                    className='bg-white dark:bg-[#24211e] border border-slate-200 dark:border-[#3e3a35] hover:border-red-500 shadow-md p-3 rounded-full transition cursor-pointer hover:scale-105 shrink-0'
+                  >
+                    <Heart 
+                      size={20} 
+                      className={isFavorited ? 'text-red-500 fill-red-500' : 'text-slate-400 dark:text-gray-400'} 
+                    />
+                  </button>
+                )}
+              </div>
+
+              {/* Pricing */}
+              <div className='flex items-baseline gap-2 font-bold text-2xl text-[#3ba264]'>
+                <span>
+                  {listing.type === 'rent' ? 'Rent:' : 'Price:'}
+                </span>
+                <span>
+                  ₹{listing.offer 
+                    ? listing.discountPrice.toLocaleString('en-IN') 
+                    : listing.regularPrice.toLocaleString('en-IN')}
+                </span>
+                {listing.type === 'rent' && (
+                  <span className='text-xs text-slate-500 dark:text-gray-400 font-semibold'>/ month</span>
+                )}
+              </div>
+
+              {/* Address */}
+              <p className='flex items-center gap-2 text-slate-600 dark:text-gray-400 text-sm font-medium'>
+                <FaMapMarkerAlt className='text-green-700 dark:text-[#3ba264] shrink-0' />
+                <span>{listing.address}</span>
               </p>
-              {listing.offer && (
-                <p className='bg-green-900 w-full max-w-[200px] text-white text-center p-1 rounded-md'>
-                  ${+listing.regularPrice - +listing.discountPrice} OFF
+
+              {/* Rent/Sale Offer Badges */}
+              <div className='flex gap-3.5 mt-2'>
+                <p className='bg-red-900 text-white font-semibold text-center text-xs py-2 px-4 rounded-xl min-w-[100px] uppercase shadow-sm'>
+                  {listing.type === 'rent' ? 'For Rent' : 'For Sale'}
                 </p>
-              )}
+                {listing.offer && (
+                  <p className='bg-green-900 text-white font-semibold text-center text-xs py-2 px-4 rounded-xl min-w-[100px] uppercase shadow-sm'>
+                    ₹{(+listing.regularPrice - +listing.discountPrice).toLocaleString('en-IN')} OFF
+                  </p>
+                )}
+              </div>
+
+              {/* Description */}
+              <div className='border-t border-slate-100 dark:border-[#2d2a26] pt-4'>
+                <h4 className='font-bold text-slate-900 dark:text-white text-base mb-2 font-serif'>Description</h4>
+                <p className='text-sm leading-relaxed text-slate-600 dark:text-gray-400 font-medium'>
+                  {listing.description}
+                </p>
+              </div>
+
+              {/* Bed, Bath, Parking, Furnish */}
+              <div className='border-t border-slate-100 dark:border-[#2d2a26] pt-4 pb-4'>
+                <h4 className='font-bold text-slate-900 dark:text-white text-base mb-3.5 font-serif'>Property Amenities</h4>
+                <ul className='text-green-900 dark:text-[#3ba264] font-semibold text-sm flex flex-wrap items-center gap-6'>
+                  <li className='flex items-center gap-2 bg-slate-100 dark:bg-[#24211e] border dark:border-[#3e3a35] px-4 py-2 rounded-xl text-slate-700 dark:text-gray-300'>
+                    <FaBed className='text-lg text-[#3ba264]' />
+                    <span>{listing.bedrooms > 1 ? `${listing.bedrooms} beds` : `${listing.bedrooms} bed`}</span>
+                  </li>
+                  <li className='flex items-center gap-2 bg-slate-100 dark:bg-[#24211e] border dark:border-[#3e3a35] px-4 py-2 rounded-xl text-slate-700 dark:text-gray-300'>
+                    <FaBath className='text-lg text-[#3ba264]' />
+                    <span>{listing.bathrooms > 1 ? `${listing.bathrooms} baths` : `${listing.bathrooms} bath`}</span>
+                  </li>
+                  <li className='flex items-center gap-2 bg-slate-100 dark:bg-[#24211e] border dark:border-[#3e3a35] px-4 py-2 rounded-xl text-slate-700 dark:text-gray-300'>
+                    <FaParking className='text-lg text-[#3ba264]' />
+                    <span>{listing.parking ? 'Parking spot' : 'No Parking'}</span>
+                  </li>
+                  <li className='flex items-center gap-2 bg-slate-100 dark:bg-[#24211e] border dark:border-[#3e3a35] px-4 py-2 rounded-xl text-slate-700 dark:text-gray-300'>
+                    <FaChair className='text-lg text-[#3ba264]' />
+                    <span>{listing.furnished ? 'Furnished' : 'Unfurnished'}</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* EMI Calculator */}
+              <div className='border-t border-slate-100 dark:border-[#2d2a26] pt-6'>
+                <EMICalculator initialAmount={listing.offer ? listing.discountPrice : listing.regularPrice} />
+              </div>
+
             </div>
-            <p className='text-slate-800'>
-              <span className='font-semibold text-black'>Description - </span>
-              {listing.description}
-            </p>
-            <ul className='text-green-900 font-semibold text-sm flex flex-wrap items-center gap-4 sm:gap-6'>
-              <li className='flex items-center gap-1 whitespace-nowrap '>
-                <FaBed className='text-lg' />
-                {listing.bedrooms > 1
-                  ? `${listing.bedrooms} beds `
-                  : `${listing.bedrooms} bed `}
-              </li>
-              <li className='flex items-center gap-1 whitespace-nowrap '>
-                <FaBath className='text-lg' />
-                {listing.bathrooms > 1
-                  ? `${listing.bathrooms} baths `
-                  : `${listing.bathrooms} bath `}
-              </li>
-              <li className='flex items-center gap-1 whitespace-nowrap '>
-                <FaParking className='text-lg' />
-                {listing.parking ? 'Parking spot' : 'No Parking'}
-              </li>
-              <li className='flex items-center gap-1 whitespace-nowrap '>
-                <FaChair className='text-lg' />
-                {listing.furnished ? 'Furnished' : 'Unfurnished'}
-              </li>
-            </ul>
-            {currentUser && listing.userRef !== currentUser._id && !contact && (
-              <button
-                onClick={() => setContact(true)}
-                className='bg-slate-700 text-white rounded-lg uppercase hover:opacity-95 p-3'
-              >
-                Contact landlord
-              </button>
+
+            {/* Right side: Enquiry form for tenants */}
+            {currentUser && currentUser.role === 'Tenant' && listing.userRef !== currentUser._id && (
+              <div className='w-full md:w-[380px] shrink-0 md:sticky md:top-24'>
+                <PropertyContact listing={listing} />
+              </div>
             )}
-            {contact && <PropertyContact listing={listing} />}
           </div>
+
         </div>
       )}
     </main>

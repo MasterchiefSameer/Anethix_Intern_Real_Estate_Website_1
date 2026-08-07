@@ -1,8 +1,13 @@
 import Listing from '../models/listing.model.js';
+import User from '../models/user.model.js';
 import { errorHandler } from '../utils/error.js';
 
 export const createListing = async (req, res, next) => {
   try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'Manager') {
+      return next(errorHandler(403, 'Only property managers can create listings.'));
+    }
     const listing = await Listing.create(req.body);
     return res.status(201).json(listing);
   } catch (error) {
@@ -10,17 +15,21 @@ export const createListing = async (req, res, next) => {
   }
 }
 export const deleteListing = async (req, res, next) => {
-  const listing = await Listing.findById(req.params.id);
-
-  if (!listing) {
-    return next(errorHandler(404, 'Listing not found!'));
-  }
-
-  if (req.user.id !== listing.userRef) {
-    return next(errorHandler(401, 'You can only delete your own listings!'));
-  }
-
   try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'Manager') {
+      return next(errorHandler(403, 'Only property managers can delete listings.'));
+    }
+    const listing = await Listing.findById(req.params.id);
+
+    if (!listing) {
+      return next(errorHandler(404, 'Listing not found!'));
+    }
+
+    if (req.user.id !== listing.userRef) {
+      return next(errorHandler(401, 'You can only delete your own listings!'));
+    }
+
     await Listing.findByIdAndDelete(req.params.id);
     res.status(200).json('Listing has been deleted!');
   } catch (error) {
@@ -29,15 +38,19 @@ export const deleteListing = async (req, res, next) => {
 };
 
 export const updateListing = async (req, res, next) => {
-  const listing = await Listing.findById(req.params.id);
-  if (!listing) {
-    return next(errorHandler(404, 'Listing not found!'));
-  }
-  if (req.user.id !== listing.userRef) {
-    return next(errorHandler(401, 'You can only update your own listings!'));
-  }
-
   try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'Manager') {
+      return next(errorHandler(403, 'Only property managers can update listings.'));
+    }
+    const listing = await Listing.findById(req.params.id);
+    if (!listing) {
+      return next(errorHandler(404, 'Listing not found!'));
+    }
+    if (req.user.id !== listing.userRef) {
+      return next(errorHandler(401, 'You can only update your own listings!'));
+    }
+
     const updatedListing = await Listing.findByIdAndUpdate(
       req.params.id,
       req.body,

@@ -6,6 +6,7 @@ import path from 'path';
 import userRouter from './routes/user.route.js' 
 import authRouter from './routes/auth.route.js'
 import listingRouter from './routes/listing.route.js';
+import enquiryRouter from './routes/enquiry.route.js';
 import dns from 'node:dns';
 import cookieParser from 'cookie-parser';
 
@@ -42,6 +43,7 @@ app.listen(PORT, () => {
 app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter)
 app.use("/api/listing", listingRouter)
+app.use("/api/enquiry", enquiryRouter)
 
 app.use(express.static(path.join(__dirname, '/client/dist')));
 

@@ -18,7 +18,9 @@ import {
   Heart,
   Settings,
   FileText,
-  Home as HomeIcon
+  Home as HomeIcon,
+  Check,
+  X as XIcon
 } from 'lucide-react';
 import {
   updateUserStart,
@@ -51,6 +53,21 @@ const Profile = () => {
   const dispatch = useDispatch();
   const location = useLocation();
 
+  // Enquiry Lists
+  const [tenantEnquiries, setTenantEnquiries] = useState([]);
+  const [managerEnquiries, setManagerEnquiries] = useState([]);
+
+  // Default active tab based on user role
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.role === 'Manager') {
+        setActiveTab('properties');
+      } else {
+        setActiveTab('favorites');
+      }
+    }
+  }, [currentUser]);
+
   // Listen to tab query parameters in URL (e.g. /profile?tab=settings)
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
@@ -60,7 +77,8 @@ const Profile = () => {
       tab === 'favorites' ||
       tab === 'properties' ||
       tab === 'applications' ||
-      tab === 'residences'
+      tab === 'residences' ||
+      tab === 'enquiries'
     ) {
       setActiveTab(tab);
     }
@@ -86,10 +104,45 @@ const Profile = () => {
 
   // Load user listings on mount if user is a Manager
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && currentUser.role === 'Manager') {
       handleShowListings();
     }
   }, [currentUser]);
+
+  // Load enquiries on tab change / user role changes
+  const fetchTenantEnquiries = async () => {
+    try {
+      const res = await fetch('/api/enquiry/tenant');
+      const data = await res.json();
+      if (data.success !== false) {
+        setTenantEnquiries(data);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchManagerEnquiries = async () => {
+    try {
+      const res = await fetch('/api/enquiry/manager');
+      const data = await res.json();
+      if (data.success !== false) {
+        setManagerEnquiries(data);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.role === 'Tenant') {
+        fetchTenantEnquiries();
+      } else if (currentUser.role === 'Manager') {
+        fetchManagerEnquiries();
+      }
+    }
+  }, [currentUser, activeTab]);
 
   // Supabase File Upload
   const handleFileUpload = async (file) => {
@@ -98,48 +151,43 @@ const Profile = () => {
       setFilePerc(0);
 
       // Client-side file size constraint (2MB)
-      const maxBytes = 2 * 1024 * 1024;
-      if (file.size > maxBytes) {
-        toast.error("File too large (max 2 MB)");
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("File size exceeds 2MB limit!");
+        setFileUploadError(true);
         return;
       }
-      // Create unique filename
-      const fileName = `${currentUser._id}-${Date.now()}-${file.name}`;
-      // const fileName = `${Date.now()}_${file.name}`;
-      // const fileName = new Date().getTime() + file.name;
-      setFilePerc(25);
 
-      //Upload  to Supabase Bucket 'avatars' with progress tracking
+      // Generate a unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${currentUser._id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      // Upload file directly using Supabase client
       const { data, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, {
+        .from('avatars') // Replace with your bucket name
+        .upload(filePath, file, {
           cacheControl: '3600',
-          upsert: false,
-          contentType: file.type, // Explicit MIME-type header
+          upsert: true,
+          onUploadProgress: (progress) => {
+            const percentage = Math.round((progress.loaded / progress.total) * 100);
+            setFilePerc(percentage);
+          }
         });
 
-      setFilePerc(50);
-
       if (uploadError) {
-        toast.error("Upload failed: " + uploadError.message);
-        return;
+        throw uploadError;
       }
 
-      setFilePerc(75);
-
-      // Get public URL
-      const { data: publicUrlData } = supabase.storage
+      // Fetch public URL
+      const { data: { publicUrl } } = supabase.storage
         .from('avatars')
-        .getPublicUrl(fileName);
+        .getPublicUrl(filePath);
 
-      setFormData({ ...formData, avatar: publicUrlData.publicUrl });
-      setFilePerc(100);
-      toast.success("Image successfully uploaded!");
+      setFormData((prev) => ({ ...prev, avatar: publicUrl }));
+      toast.success("Profile avatar uploaded successfully!");
     } catch (err) {
-      console.error("Unexpected upload error:", err);
       setFileUploadError(true);
-      setFilePerc(0);
-      toast.error("Unexpected upload error: " + err.message);
+      toast.error("Could not upload profile picture!");
     }
   };
 
@@ -158,13 +206,11 @@ const Profile = () => {
         },
         body: JSON.stringify(formData),
       });
-
       const data = await res.json();
       if (data.success === false) {
         dispatch(updateUserFailure(data.message));
         return;
       }
-
       dispatch(updateUserSuccess(data));
       setUpdateSuccess(true);
       toast.success("Profile updated successfully!");
@@ -185,7 +231,7 @@ const Profile = () => {
         return;
       }
       dispatch(deleteUserSuccess(data));
-      toast.success("Account deleted successfully!");
+      toast.success("User deleted successfully!");
     } catch (error) {
       dispatch(deleteUserFailure(error.message));
     }
@@ -235,8 +281,28 @@ const Profile = () => {
       setUserListings((prev) => prev.filter((listing) => listing._id !== listingId));
       toast.success("Listing deleted successfully!");
     } catch (error) {
-      //console.log(error.message);
       toast.error(error.message);
+    }
+  };
+
+  const handleStatusUpdate = async (enquiryId, status) => {
+    try {
+      const res = await fetch(`/api/enquiry/status/${enquiryId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        toast.error(data.message || 'Failed to update status.');
+        return;
+      }
+      toast.success(`Enquiry status updated to ${status}!`);
+      fetchManagerEnquiries();
+    } catch (error) {
+      toast.error('Something went wrong.');
     }
   };
 
@@ -253,61 +319,85 @@ const Profile = () => {
           </div>
 
           <div className='flex flex-col gap-1.5'>
-            {/* Favorites Tab */}
-            <button
-              type="button"
-              onClick={() => setActiveTab('favorites')}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition cursor-pointer text-left w-full ${
-                activeTab === 'favorites'
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <Heart className='w-4.5 h-4.5' />
-              <span>Favorites</span>
-            </button>
+            {/* Tenant Only Tabs */}
+            {currentUser && currentUser.role === 'Tenant' && (
+              <>
+                {/* Favorites Tab */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('favorites')}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition cursor-pointer text-left w-full ${
+                    activeTab === 'favorites'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <Heart className='w-4.5 h-4.5' />
+                  <span>Favorites</span>
+                </button>
 
-            {/* Applications Tab */}
-            <button
-              type="button"
-              onClick={() => setActiveTab('applications')}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition cursor-pointer text-left w-full ${
-                activeTab === 'applications'
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <FileText className='w-4.5 h-4.5' />
-              <span>Applications</span>
-            </button>
+                {/* Applications Tab */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('applications')}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition cursor-pointer text-left w-full ${
+                    activeTab === 'applications'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <FileText className='w-4.5 h-4.5' />
+                  <span>My Enquiries</span>
+                </button>
 
-            {/* Residences Tab */}
-            <button
-              type="button"
-              onClick={() => setActiveTab('residences')}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition cursor-pointer text-left w-full ${
-                activeTab === 'residences'
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <HomeIcon className='w-4.5 h-4.5' />
-              <span>Residences</span>
-            </button>
+                {/* Residences Tab */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('residences')}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition cursor-pointer text-left w-full ${
+                    activeTab === 'residences'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <HomeIcon className='w-4.5 h-4.5' />
+                  <span>Residences</span>
+                </button>
+              </>
+            )}
 
-            {/* My Properties Tab */}
-            <button
-              type="button"
-              onClick={() => setActiveTab('properties')}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition cursor-pointer text-left w-full ${
-                activeTab === 'properties'
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <Building className='w-4.5 h-4.5' />
-              <span>My Properties</span>
-            </button>
+            {/* Manager Only Tabs */}
+            {currentUser && currentUser.role === 'Manager' && (
+              <>
+                {/* My Properties Tab */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('properties')}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition cursor-pointer text-left w-full ${
+                    activeTab === 'properties'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <Building className='w-4.5 h-4.5' />
+                  <span>My Properties</span>
+                </button>
+
+                {/* Received Enquiries Tab */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('enquiries')}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition cursor-pointer text-left w-full ${
+                    activeTab === 'enquiries'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <FileText className='w-4.5 h-4.5' />
+                  <span>Received Enquiries</span>
+                </button>
+              </>
+            )}
 
             {/* Settings Tab */}
             <button
@@ -327,35 +417,77 @@ const Profile = () => {
 
         {/* Right Content Panel */}
         <div className='lg:w-3/4 w-full bg-white border border-gray-100 shadow-sm rounded-xl p-6 min-h-[550px] flex flex-col'>
-          {activeTab === 'favorites' && <Favourites />}
+          
+          {currentUser && currentUser.role === 'Tenant' && activeTab === 'favorites' && <Favourites />}
 
-          {activeTab === 'applications' && (
+          {currentUser && currentUser.role === 'Tenant' && activeTab === 'applications' && (
             <div className='flex flex-col gap-6 w-full'>
               <div className='border-b pb-4'>
-                <h2 className='text-2xl font-bold text-slate-800'>My Applications</h2>
-                <p className='text-xs text-slate-500 mt-1'>Browse and manage your rental applications</p>
+                <h2 className='text-2xl font-bold text-slate-800'>My Enquiries</h2>
+                <p className='text-xs text-slate-500 mt-1'>Browse and track your property enquiries and visits</p>
               </div>
-              <div className='text-center py-16 flex flex-col items-center gap-4 max-w-sm mx-auto w-full'>
-                <div className='bg-slate-100 text-slate-400 p-4 rounded-full'>
-                  <FileText size={32} className='text-gray-400' />
+              
+              {tenantEnquiries.length === 0 ? (
+                <div className='text-center py-16 flex flex-col items-center gap-4 max-w-sm mx-auto w-full'>
+                  <div className='bg-slate-100 text-slate-400 p-4 rounded-full'>
+                    <FileText size={32} className='text-gray-400' />
+                  </div>
+                  <div>
+                    <h3 className='font-bold text-slate-800 text-base'>No enquiries yet</h3>
+                    <p className='text-xs text-slate-500 mt-1'>
+                      You haven't submitted any enquiries or tour requests. Start exploring properties to apply!
+                    </p>
+                  </div>
+                  <Link 
+                    to='/'
+                    className='bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase transition text-center shadow-sm w-full block font-semibold'
+                  >
+                    Explore Properties
+                  </Link>
                 </div>
-                <div>
-                  <h3 className='font-bold text-slate-800 text-base'>No applications yet</h3>
-                  <p className='text-xs text-slate-500 mt-1'>
-                    You haven't submitted any rental applications. Start exploring properties to apply!
-                  </p>
+              ) : (
+                <div className='flex flex-col gap-4 mt-2'>
+                  {tenantEnquiries.map((enq) => (
+                    <div key={enq._id} className='border border-gray-100 shadow-sm rounded-xl p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white'>
+                      <div className='flex-1 flex flex-col gap-1.5'>
+                        <div className='flex items-center gap-2'>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            enq.type === 'Enquire' ? 'bg-blue-50 text-blue-600' : enq.type === 'Visit' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                          }`}>
+                            {enq.type}
+                          </span>
+                          <span className='text-[10px] text-gray-400 font-semibold'>
+                            {new Date(enq.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <h4 className='font-bold text-slate-800 text-sm'>
+                          {enq.listingId ? (
+                            <Link to={`/listing/${enq.listingId._id}`} className='hover:underline text-blue-600'>
+                              {enq.listingId.name}
+                            </Link>
+                          ) : (
+                            <span className='text-gray-400 italic'>Listing Deleted</span>
+                          )}
+                        </h4>
+                        <p className='text-xs text-slate-600 bg-gray-55 p-3 rounded-lg border dark:bg-[#1a1816]/30 italic mt-1'>
+                          "{enq.message}"
+                        </p>
+                      </div>
+                      
+                      {/* Status Badges */}
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                        enq.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : enq.status === 'Rejected' ? 'bg-rose-100 text-rose-800' : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {enq.status}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-                <a 
-                  href='/'
-                  className='bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase transition text-center shadow-sm w-full block font-semibold'
-                >
-                  Explore Properties
-                </a>
-              </div>
+              )}
             </div>
           )}
 
-          {activeTab === 'residences' && (
+          {currentUser && currentUser.role === 'Tenant' && activeTab === 'residences' && (
             <div className='flex flex-col gap-6 w-full'>
               <div className='border-b pb-4'>
                 <h2 className='text-2xl font-bold text-slate-800'>My Residences</h2>
@@ -371,17 +503,17 @@ const Profile = () => {
                     Once your lease application is approved, your residency information will appear here.
                   </p>
                 </div>
-                <a 
-                  href='/'
+                <Link 
+                  to='/'
                   className='bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase transition text-center shadow-sm w-full block font-semibold'
                 >
                   Search Rentals
-                </a>
+                </Link>
               </div>
             </div>
           )}
           
-          {activeTab === 'properties' && (
+          {currentUser && currentUser.role === 'Manager' && activeTab === 'properties' && (
             <div className='flex flex-col gap-6'>
               {/* Quick Statistics Header */}
               <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
@@ -412,7 +544,7 @@ const Profile = () => {
                   <p className='text-xs text-slate-500'>Manage your rental and sales properties</p>
                 </div>
                 <Link 
-                  className='flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg font-semibold text-xs uppercase transition'
+                  className='flex items-center gap-2 bg-[#1b4332] hover:bg-[#2d5a45] text-white px-4 py-2 rounded-lg font-semibold text-xs uppercase transition cursor-pointer border border-[#2d5a45]'
                   to="/create-listing"
                 >
                   <PlusCircle size={14} />
@@ -484,6 +616,112 @@ const Profile = () => {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {currentUser && currentUser.role === 'Manager' && activeTab === 'enquiries' && (
+            <div className='flex flex-col gap-6 w-full'>
+              <div className='border-b pb-4'>
+                <h2 className='text-2xl font-bold text-slate-800'>Received Enquiries</h2>
+                <p className='text-xs text-slate-500 mt-1'>Manage applications, tour bookings, and reservations</p>
+              </div>
+
+              {managerEnquiries.length === 0 ? (
+                <div className='text-center py-16 flex flex-col items-center gap-4 max-w-sm mx-auto w-full'>
+                  <div className='bg-slate-100 text-slate-400 p-4 rounded-full'>
+                    <FileText size={32} />
+                  </div>
+                  <div>
+                    <h3 className='font-bold text-slate-800 text-base'>No enquiries received</h3>
+                    <p className='text-xs text-slate-500 mt-1'>
+                      You haven't received any enquiries or booking requests from tenants yet.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className='flex flex-col gap-4 mt-2'>
+                  {managerEnquiries.map((enq) => (
+                    <div key={enq._id} className='border border-gray-100 shadow-sm rounded-xl p-5 flex flex-col gap-4 bg-white'>
+                      
+                      {/* Top Row: Listing & Date */}
+                      <div className='flex justify-between items-start gap-4'>
+                        <div className='flex flex-col gap-1'>
+                          <div className='flex items-center gap-2'>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                              enq.type === 'Enquire' ? 'bg-blue-50 text-blue-600' : enq.type === 'Visit' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                            }`}>
+                              {enq.type}
+                            </span>
+                            <span className='text-[10px] text-gray-400 font-semibold'>
+                              {new Date(enq.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <h4 className='font-bold text-slate-800 text-sm mt-1'>
+                            {enq.listingId ? (
+                              <Link to={`/listing/${enq.listingId._id}`} className='hover:underline text-blue-600'>
+                                {enq.listingId.name}
+                              </Link>
+                            ) : (
+                              <span className='text-gray-400 italic'>Listing Deleted</span>
+                            )}
+                          </h4>
+                        </div>
+                        
+                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                          enq.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : enq.status === 'Rejected' ? 'bg-rose-100 text-rose-800' : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {enq.status}
+                        </span>
+                      </div>
+
+                      {/* Middle: Tenant details */}
+                      <div className='bg-slate-50 p-4 rounded-xl border border-gray-100 text-xs flex flex-col sm:flex-row gap-3 sm:gap-6 justify-between'>
+                        <div>
+                          <span className='font-bold text-slate-500 block uppercase tracking-wider text-[9px]'>Sender Details</span>
+                          <span className='font-bold text-slate-800 text-sm mt-0.5 block'>{enq.name}</span>
+                        </div>
+                        <div>
+                          <span className='font-bold text-slate-500 block uppercase tracking-wider text-[9px]'>Email</span>
+                          <a href={`mailto:${enq.email}`} className='text-blue-600 hover:underline font-semibold block mt-0.5'>{enq.email}</a>
+                        </div>
+                        <div>
+                          <span className='font-bold text-slate-500 block uppercase tracking-wider text-[9px]'>Phone</span>
+                          <a href={`tel:${enq.phone}`} className='text-slate-800 font-semibold block mt-0.5'>{enq.phone}</a>
+                        </div>
+                      </div>
+
+                      {/* Message body */}
+                      <p className='text-xs text-slate-600 bg-gray-50 border p-3 rounded-lg italic'>
+                        "{enq.message}"
+                      </p>
+
+                      {/* Action buttons (only if Pending) */}
+                      {enq.status === 'Pending' && (
+                        <div className='flex gap-3 justify-end border-t pt-3'>
+                          <button
+                            type="button"
+                            onClick={() => handleStatusUpdate(enq._id, 'Rejected')}
+                            className='flex items-center gap-1.5 border border-rose-200 hover:bg-rose-50 text-rose-600 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition cursor-pointer'
+                          >
+                            <XIcon size={12} />
+                            <span>Reject</span>
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => handleStatusUpdate(enq._id, 'Approved')}
+                            className='flex items-center gap-1.5 bg-[#1b4332] hover:bg-[#2d5a45] text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition cursor-pointer'
+                          >
+                            <Check size={12} />
+                            <span>Approve</span>
+                          </button>
+                        </div>
+                      )}
+
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

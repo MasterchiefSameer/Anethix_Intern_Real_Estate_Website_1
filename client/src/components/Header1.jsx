@@ -2,9 +2,10 @@ import { FaSearch } from 'react-icons/fa';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { User, Heart, LogOut, Scale, Sun, Moon, House } from 'lucide-react';
+import { User, Heart, LogOut, Scale, Sun, Moon, House, Calculator } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTheme } from '../pages/Additional/Theme';
+import EMICalculator from './EMICalculator';
 import {
   signOutUserStart,
   signOutUserSuccess,
@@ -15,6 +16,7 @@ export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,6 +50,16 @@ export default function Header() {
     document.addEventListener('click', closeDropdown);
     return () => document.removeEventListener('click', closeDropdown);
   }, [dropdownOpen]);
+
+  useEffect(() => {
+    const closeCalc = (e) => {
+      if (calcOpen && !e.target.closest('.header-calc-container')) {
+        setCalcOpen(false);
+      }
+    };
+    document.addEventListener('click', closeCalc);
+    return () => document.removeEventListener('click', closeCalc);
+  }, [calcOpen]);
 
   const handleSignOut = async () => {
     try {
@@ -148,6 +160,23 @@ export default function Header() {
                 >
                   {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                 </button>
+
+                {/* EMI Calculator Dropdown */}
+                <div className='relative header-calc-container flex items-center'>
+                  <button
+                    type="button"
+                    onClick={() => setCalcOpen(!calcOpen)}
+                    title="EMI Calculator"
+                    className='text-slate-600 hover:text-[#3ba264] dark:text-gray-400 dark:hover:text-[#3ba264] transition hover:scale-105 cursor-pointer p-0.5'
+                  >
+                    <Calculator size={18} />
+                  </button>
+                  {calcOpen && (
+                    <div className='absolute right-0 top-10 w-[340px] sm:w-[380px] z-50 animate-in fade-in slide-in-from-top-2 duration-150 shadow-2xl'>
+                      <EMICalculator />
+                    </div>
+                  )}
+                </div>
               </div>
 
               {currentUser ? (
