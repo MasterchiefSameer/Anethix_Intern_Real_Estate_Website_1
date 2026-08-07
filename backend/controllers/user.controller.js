@@ -66,7 +66,7 @@ export const getUserListings = async (req, res, next) => {
     return next(errorHandler(401, 'You can only view your own listings'));
   }
 };
-
+// get any user profile -> for landlord details in the listing page.
 export const getUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
@@ -78,7 +78,7 @@ export const getUser = async (req, res, next) => {
     next(error);
   }
 };
-
+// toggle between adding and removing a listing from user's favorites.
 export const toggleFavorite = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);

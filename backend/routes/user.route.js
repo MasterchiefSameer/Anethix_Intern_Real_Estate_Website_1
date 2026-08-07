@@ -9,8 +9,8 @@ router.get('/', test);
 router.post('/update/:id', verifyToken, updateUser);
 router.delete('/delete/:id', verifyToken, deleteUser);
 router.get('/listings/:id', verifyToken, getUserListings);
+router.get('/:id', verifyToken, getUser);
 router.post('/favorite/:id', verifyToken, toggleFavorite);
 router.get('/favorites/:id', verifyToken, getFavorites);
-router.get('/:id', verifyToken, getUser);
 
 export default router;

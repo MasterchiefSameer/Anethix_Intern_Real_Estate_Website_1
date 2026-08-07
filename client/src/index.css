@@ -1,7 +1,15 @@
 @import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
 
 body {
   background-color: rgb(241, 245, 241);
+  color: rgb(30, 41, 59);
   min-height: 100vh;
   margin: 0;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+body.dark {
+  background-color: #12100e;
+  color: #f8fafc;
 }
