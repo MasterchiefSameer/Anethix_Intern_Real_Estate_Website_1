@@ -24,22 +24,47 @@ const Contact = () => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleSendMessage = (e) => {
+  const FORMSPREE_FORM_ID = "xyegkwvl";
+
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    setSending(true);
     
-    // Simulate API delivery
-    setTimeout(() => {
-      setSending(false);
-      toast.success("Message sent successfully! Our advisors will contact you shortly.");
-      setFormData({
-        name: '',
-        phone: '',
-        email: '',
-        subject: '',
-        message: ''
+    if (FORMSPREE_FORM_ID === "your-formspree-id") {
+      toast.error("Please configure your actual Formspree Form ID at the top of Contact.jsx!");
+      return;
+    }
+
+    setSending(true);
+
+    try {
+      const response = await fetch(`https://formspree.io/f/${FORMSPREE_FORM_ID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(formData),
       });
-    }, 1200);
+
+      setSending(false);
+
+      if (response.ok) {
+        toast.success("Message sent successfully! Our advisors will contact you shortly.");
+        setFormData({
+          name: '',
+          phone: '',
+          email: '',
+          subject: '',
+          message: ''
+        });
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || "Failed to submit message to Formspree.");
+      }
+    } catch (error) {
+      setSending(false);
+      toast.error("An error occurred while sending your message. Please try again.");
+    }
   };
 
   return (
@@ -76,6 +101,7 @@ const Contact = () => {
               <input 
                 type="text" 
                 id="name"
+                name="name"
                 placeholder="John Doe" 
                 required 
                 onChange={handleChange}
@@ -90,6 +116,7 @@ const Contact = () => {
               <input 
                 type="tel" 
                 id="phone"
+                name="phone"
                 placeholder="+91 9000000000" 
                 required 
                 onChange={handleChange}
@@ -106,6 +133,7 @@ const Contact = () => {
             <input 
               type="email" 
               id="email"
+              name="email"
               placeholder="you@email.com" 
               required 
               onChange={handleChange}
@@ -121,6 +149,7 @@ const Contact = () => {
             <input 
               type="text" 
               id="subject"
+              name="subject"
               placeholder="What can we help with?" 
               onChange={handleChange}
               value={formData.subject}
@@ -135,6 +164,7 @@ const Contact = () => {
             <textarea 
               rows={5} 
               id="message"
+              name="message"
               placeholder="Tell us a bit more..." 
               required 
               onChange={handleChange}
@@ -169,7 +199,7 @@ const Contact = () => {
                 <div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">Address</h4>
                   <p className="text-sm text-slate-600 dark:text-gray-400 mt-1 leading-relaxed">
-                    3rd Floor, Ganesh Guwahati Tower, GS Road, Christian Basti, Guwahati, Assam 781005
+                    Tumpreng Bazaar, Donka, Karbi Anglong, Assam 782485
                   </p>
                 </div>
               </div>
@@ -182,7 +212,7 @@ const Contact = () => {
                 <div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">Phone</h4>
                   <p className="text-sm text-slate-600 dark:text-gray-400 mt-1">
-                    +91 6544357535
+                    +91 1234567489
                   </p>
                 </div>
               </div>
@@ -195,7 +225,7 @@ const Contact = () => {
                 <div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">Email</h4>
                   <p className="text-sm text-slate-600 dark:text-gray-400 mt-1">
-                    info@anethixrealty.com
+                    anethixrealestate@info.com
                   </p>
                 </div>
               </div>
@@ -219,7 +249,7 @@ const Contact = () => {
           <div className="bg-white dark:bg-[#24211e]/90 border border-slate-200 dark:border-[#302d29] shadow-md dark:shadow-xl rounded-2xl p-2.5 h-[320px] overflow-hidden transition-colors duration-250">
             <iframe 
               title="office map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3581.428678502324!2d91.77660601502758!3d26.1500366834614!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x375a59336d3c26ab%3A0xc3fde9b8e88849ad!2sGS%20Rd%2C%20Guwahati%2C%20Assam!5e0!3m2!1sen!2sin!4v1650000000000!5m2!1sen!2sin"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d28688.454650556385!2d92.73214072715699!3d25.998955657854363!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3745406ea187f77b%3A0x9bb4a89832d7208b!2sTumpreng%2C%20Assam!5e0!3m2!1sen!2sin!4v1786180014294!5m2!1sen!2sin"
               className={`w-full h-full rounded-xl border-0 transition duration-300 ${
                 theme === 'dark' ? 'opacity-85 invert contrast-125 filter grayscale' : 'opacity-90'
               }`}
