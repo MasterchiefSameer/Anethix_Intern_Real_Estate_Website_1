@@ -214,7 +214,7 @@ export default function SignUp() {
           </div>
 
           {/* Google SSO Option */}
-          <OAuth />
+          <OAuth isSignUp={true} />
         </form>
 
         {/* Switch to SignIn Link */}

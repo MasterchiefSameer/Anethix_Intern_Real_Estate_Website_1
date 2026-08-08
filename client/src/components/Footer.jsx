@@ -31,7 +31,7 @@ const Footer = () => {
             </div>
           </Link>
           <p className='text-sm leading-relaxed text-slate-600 dark:text-gray-400 max-w-xs mt-2'>
-            A boutique property advisory helping families and investors find their next address across India's most sought-after cities.
+            A trusted property advisory connecting families and investors with exceptional real estate opportunities across India’s premier markets.
           </p>
         </div>
 
@@ -67,15 +67,15 @@ const Footer = () => {
           <ul className='flex flex-col gap-3.5 text-sm font-medium'>
             <li className='flex items-start gap-3.5'>
               <MapPin size={18} className='text-slate-500 dark:text-[#3ba264] shrink-0 mt-0.5' />
-              <span>Christian Basti, Guwahati, Assam 781005</span>
+              <span>Tumpreng Bazaar, Donka, Karbi Anglong, Assam 782485</span>
             </li>
             <li className='flex items-center gap-3.5'>
               <Phone size={18} className='text-slate-500 dark:text-[#3ba264] shrink-0' />
-              <span>+91 123456789</span>
+              <span>+91 1234567890</span>
             </li>
             <li className='flex items-center gap-3.5'>
               <Mail size={18} className='text-slate-500 dark:text-[#3ba264] shrink-0' />
-              <span>info@anethixrealty.com</span>
+              <span>anethixrealestate@info.com</span>
             </li>
           </ul>
 

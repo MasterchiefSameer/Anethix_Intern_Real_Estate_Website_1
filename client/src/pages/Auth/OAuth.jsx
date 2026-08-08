@@ -6,7 +6,7 @@ import { signInSuccess } from '../../redux/user/userSlice';
 import { useNavigate } from 'react-router-dom';
 import { User, House, X } from 'lucide-react';
 
-const OAuth = () => {
+const OAuth = ({ isSignUp = false }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
@@ -19,13 +19,13 @@ const OAuth = () => {
 
       const result = await signInWithPopup(auth, provider);
 
-            // console.log(result); // show in browser console
+      // console.log(result); // show in browser console
       const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-                //   body: JSON.stringify(result),
+        //   body: JSON.stringify(result),
         body: JSON.stringify({
           name: result.user.displayName,
           email: result.user.email,
@@ -34,19 +34,27 @@ const OAuth = () => {
         }),
       });
       const data = await res.json();
-            // console.log(data); // show in browser console
+      // console.log(data); // show in browser console
       dispatch(signInSuccess(data));
-            navigate('/'); // navigate to the home page
+      navigate('/'); // navigate to the home page
     } catch (error) {
       console.log('Could not sign in with google', error);
     }
   };
 
+  const handleButtonClick = () => {
+    if (isSignUp) {
+      setShowModal(true);
+    } else {
+      handleGoogleClick(null);
+    }
+  };
+
   return (
     <>
-      <button 
-        onClick={() => setShowModal(true)} 
-        type='button' 
+      <button
+        onClick={handleButtonClick}
+        type='button'
         className='bg-red-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80 transition duration-300 w-full font-semibold text-sm cursor-pointer'
       >
         continue with google
@@ -55,14 +63,14 @@ const OAuth = () => {
       {showModal && (
         <div className='fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200'>
           <div className='bg-white dark:bg-[#1a1816] text-slate-800 dark:text-gray-200 rounded-2xl max-w-md w-full p-6 shadow-2xl relative border dark:border-[#2d2a26] animate-in zoom-in-95 duration-200'>
-            <button 
+            <button
               type="button"
               onClick={() => setShowModal(false)}
               className='absolute right-4 top-4 text-slate-400 hover:text-slate-600 dark:hover:text-white transition cursor-pointer'
             >
               <X size={20} />
             </button>
-            
+
             <div className='text-center mb-6'>
               <h3 className='text-xl font-bold font-serif text-slate-900 dark:text-white'>Choose Account Type</h3>
               <p className='text-xs text-slate-500 dark:text-gray-400 mt-1.5'>
